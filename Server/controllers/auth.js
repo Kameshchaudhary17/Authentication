@@ -32,18 +32,28 @@ export const loginUser = async (req, res) => {
         return sendResponse(res, 401, "Invalid credentials");
       }
 
+      // Generate JWT token
+      const token = jwt.sign(
+        { email: user.email },
+        'secret_key', // Secret key
+        { expiresIn: "1h" } // Token expiration time
+      );
+
+      res.cookie('token',token);
 
       return sendResponse(res, 200, "Login successful", { 
+        token,
         user: { id: user.id, username: user.username, email: user.email }
       });
     });
+
+
   } catch (error) {
     console.error("Error:", error);
     return sendResponse(res, 500, "Internal server error");
   }
-
-
 };
+
 
 export const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
