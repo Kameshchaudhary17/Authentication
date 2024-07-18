@@ -2,56 +2,38 @@ import db from "../db.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
-const sendResponse = (res, status, message, data = null) => {
-  res.status(status).json({ message, data });
+const generateToken = (email) => {
+  return jwt.sign({ email }, 'secret_key', { expiresIn: '1h' });
 };
 
-export const loginUser = async (req, res) => {
+// Login User Function
+export const loginUser = (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return sendResponse(res, 400, "Email and password are required");
+      return res.status(400).send({ message: "Email and password are required" });
   }
 
-  try {
-    const sql = "SELECT * FROM auth WHERE email = ?";
-    db.query(sql, [email], async (err, results) => {
-      if (err) {
-        console.error("Database error:", err);
-        return sendResponse(res, 500, "Internal server error");
-      }
+  const sql = "SELECT * FROM auth WHERE email = ?";
+
+  db.query(sql, [email], async (err, results) => {
+      if (err) return res.status(500).send({ message: "Database query error", error: err });
 
       if (results.length === 0) {
-        return sendResponse(res, 401, "Invalid credentials");
+          return res.status(401).send({ message: "Invalid email or password" });
       }
 
       const user = results[0];
       const passwordMatch = await bcrypt.compare(password, user.password);
 
       if (!passwordMatch) {
-        return sendResponse(res, 401, "Invalid credentials");
+          return res.status(401).send({ message: "Invalid email or password" });
       }
 
-      // Generate JWT token
-      const token = jwt.sign(
-        { email: user.email },
-        'secret_key', // Secret key
-        { expiresIn: "1h" } // Token expiration time
-      );
+      const token = generateToken(user.email);
 
-      res.cookie('token',token);
-
-      return sendResponse(res, 200, "Login successful", { 
-        token,
-        user: { id: user.id, username: user.username, email: user.email }
-      });
-    });
-
-
-  } catch (error) {
-    console.error("Error:", error);
-    return sendResponse(res, 500, "Internal server error");
-  }
+      res.status(200).send({ message: "Login successful", token, user });
+  });
 };
 
 
@@ -59,37 +41,28 @@ export const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
-    return sendResponse(res, 400, "Username, email, and password are required");
+      return res.status(400).send({ message: "Username, email, and password are required" });
   }
 
   try {
-    const checkUserSql = "SELECT * FROM auth WHERE email = ?";
-    db.query(checkUserSql, [email], async (err, results) => {
-      if (err) {
-        console.error("Database error:", err);
-        return sendResponse(res, 500, "Internal server error");
-      }
-
-      if (results.length > 0) {
-        return sendResponse(res, 409, "User with this email already exists");
-      }
-
+      // Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const insertUserSql = "INSERT INTO auth (`username`, `email`, `password`) VALUES (?, ?, ?)";
-      db.query(insertUserSql, [username, email, hashedPassword], (err, result) => {
-        if (err) {
-          console.error("Database error:", err);
-          return sendResponse(res, 500, "Internal server error");
-        }
-        return sendResponse(res, 201, "User registered successfully", { 
-          id: result.insertId, username, email 
-        });
+      const sql = "INSERT INTO auth(`username`,`email`,`password`) VALUES (?,?,?)";
+
+      db.query(sql, [username, email, hashedPassword], (err, result) => {
+          if (err) {
+              // Check for duplicate entry error (e.g., duplicate email)
+              if (err.code === 'ER_DUP_ENTRY') {
+                  return res.status(409).send({ message: "Email already registered" });
+              }
+              return res.status(500).send({ message: "Database query error", error: err });
+          }
+
+          res.status(201).send({ message: "Registration successful", result });
       });
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    return sendResponse(res, 500, "Internal server error");
+  } catch (err) {
+      res.status(500).send({ message: "Error hashing password", error: err });
   }
 };
 
