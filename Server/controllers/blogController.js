@@ -23,17 +23,21 @@ export const createBlog = (req, res) => {
   };
   
   
-  export const deleteBlog = (req,res)=>{
+  export const deleteBlog = (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id; 
   
-    const {id} = req.params;
+    const sql = "DELETE FROM blog WHERE id = ? AND user_id = ?";
   
-    const sql = "DELETE from blog WHERE id = ? and user_id = ?";
-  
-    db.query(sql,id,(err,result)=>{
-        if(err) return res.status(500).send(err);
-        return res.status(200).send({message: "value deleted", result})
-    })
+    db.query(sql, [id, userId], (err, result) => {
+      if (err) return res.status(500).send(err);
+      if (result.affectedRows === 0) {
+        return res.status(404).send({ message: "Blog post not found or user not authorized" });
+      }
+      return res.status(200).send({ message: "Blog post deleted successfully", result });
+    });
   };
+  
   
   
   export const updateBlog = (req,res)=>{

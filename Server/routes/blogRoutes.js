@@ -8,7 +8,7 @@ const blogRoutes = express.Router();
 
 blogRoutes.post('/create',authToken, createBlog)
 blogRoutes.get('/get', getBlog)
-blogRoutes.delete('/delete/:id', deleteBlog)
+blogRoutes.delete('/delete/:id',authToken, deleteBlog)
 blogRoutes.put('/update', updateBlog)
 
 export default blogRoutes;

@@ -11,6 +11,8 @@ export const authToken = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, 'secret_key');
     req.user = { id: decoded.id, email: decoded.email }; 
+    console.log(req.user);
+    console.log(decoded);
     next();
   } catch (error) {
     res.status(400).json({ message: error.message });
