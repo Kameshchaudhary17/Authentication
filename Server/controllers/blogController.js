@@ -27,7 +27,7 @@ export const createBlog = (req, res) => {
   
     const {id} = req.params;
   
-    const sql = "DELETE from blog WHERE id = ?";
+    const sql = "DELETE from blog WHERE id = ? and user_id = ?";
   
     db.query(sql,id,(err,result)=>{
         if(err) return res.status(500).send(err);
