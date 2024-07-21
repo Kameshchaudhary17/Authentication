@@ -40,15 +40,17 @@ export const createBlog = (req, res) => {
   
   
   
-  export const updateBlog = (req,res)=>{
-      
-      const sql ="UPDATE blog set title = ?, description = ? WHERE id = ?";
-      const value = req.body
-      console.log(value);
+  export const updateBlog = (req, res) => {
+    const sql = "UPDATE blog SET title = ?, description = ? WHERE id = ? AND user_id = ?";
+    const { title, description, id } = req.body;
+    const userId = req.user.id; // Get the user ID from the authenticated user
   
-      db.query(sql,[value.title, value.description, value.id],(err,result)=>{
-          if(err) return res.status(500).send(err);
-          return res.status(200).send({message: "Value Updated", result})
-      })
+    db.query(sql, [title, description, id, userId], (err, result) => {
+      if (err) return res.status(500).send(err);
+      if (result.affectedRows === 0) {
+        return res.status(404).send({ message: "Blog post not found or user not authorized" });
+      }
+      return res.status(200).send({ message: "Blog post updated successfully", result });
+    });
+  };
   
-  }
