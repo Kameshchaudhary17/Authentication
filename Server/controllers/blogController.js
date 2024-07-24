@@ -13,12 +13,23 @@ export const createBlog = (req, res) => {
   };
   
   
-  export const getBlog = (req, res)=>{
-    const sql = "SELECT * from blog"
+  export const getBlog = (req, res) => {
+    const userId = req.user.id; 
+    const sql = "SELECT * FROM blog WHERE user_id = ?";
   
-    db.query(sql,(err,result)=>{
-        if(err) return res.status(500).send(err);
-        return res.status(200).send({message:"get details", result})
+    db.query(sql, [userId], (err, result) => {
+      if (err) return res.status(500).send(err);
+      return res.status(200).json(result);
+    });
+  };
+
+  export const publicBlog = (req, res) => {
+    const userId = req.user.id; 
+    const sql = "SELECT * FROM blog";
+  
+    db.query(sql, [userId], (err, result) => {
+      if (err) return res.status(500).send(err);
+      return res.status(200).json(result);
     });
   };
   
