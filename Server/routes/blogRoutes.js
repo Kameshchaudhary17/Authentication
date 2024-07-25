@@ -13,6 +13,6 @@ blogRoutes.post('/create',authToken, upload.single('image'), createBlog)
 blogRoutes.get('/get',authToken, getBlog)
 blogRoutes.get('/public',authToken, publicBlog)
 blogRoutes.delete('/delete/:id',authToken, deleteBlog)
-blogRoutes.put('/update',authToken, updateBlog)
+blogRoutes.put('/update',authToken,upload.single('image'), updateBlog)
 
 export default blogRoutes;

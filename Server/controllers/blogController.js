@@ -1,16 +1,16 @@
 import db from "../db.js";
 
 export const createBlog = (req, res) => {
-    const sql = "INSERT INTO blog (`title`, `description`, `user_id`) VALUES (?, ?, ?)";
-  
-    const { title, description } = req.body;
-    const userId = req.user.id; // Get the user ID from the request object
-  
-    db.query(sql, [title, description, userId], (err, result) => {
+  const sql = "INSERT INTO blog (`title`, `description`, `image`, `user_id`) VALUES (?, ?, ?, ?)";
+  const { title, description } = req.body;
+  const userId = req.user.id;
+  const image = req.file ? `/${req.file.filename}` : null; // Store the image path
+
+  db.query(sql, [title, description, image, userId], (err, result) => {
       if (err) return res.status(500).send(err);
       return res.status(200).send({ message: "Blog post created successfully", result });
-    });
-  };
+  });
+};
   
   
   export const getBlog = (req, res) => {
@@ -52,16 +52,16 @@ export const createBlog = (req, res) => {
   
   
   export const updateBlog = (req, res) => {
-    const sql = "UPDATE blog SET title = ?, description = ? WHERE id = ? AND user_id = ?";
+    const sql = "UPDATE blog SET title = ?, description = ?, image = ? WHERE id = ? AND user_id = ?";
     const { title, description, id } = req.body;
-    const userId = req.user.id; // Get the user ID from the authenticated user
-  
-    db.query(sql, [title, description, id, userId], (err, result) => {
-      if (err) return res.status(500).send(err);
-      if (result.affectedRows === 0) {
-        return res.status(404).send({ message: "Blog post not found or user not authorized" });
-      }
-      return res.status(200).send({ message: "Blog post updated successfully", result });
+    const userId = req.user.id;
+    const image = req.file ? `/${req.file.filename}` : req.body.image; // Use the new image or keep the existing one
+
+    db.query(sql, [title, description, image, id, userId], (err, result) => {
+        if (err) return res.status(500).send(err);
+        if (result.affectedRows === 0) {
+            return res.status(404).send({ message: "Blog post not found or user not authorized" });
+        }
+        return res.status(200).send({ message: "Blog post updated successfully", result });
     });
-  };
-  
+};

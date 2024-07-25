@@ -11,6 +11,8 @@ dotenv.config()
 
 const app = express();
 
+
+app.use(express.static('storage'))
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
