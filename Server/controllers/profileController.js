@@ -1,18 +1,18 @@
-import db from "../db";
+import db from "../db.js";
 
 export const createProfile = (req,res) =>{
-    const sql = "INSERT INTO profile (`user_id`, `name`, `contact`, `address`, `bio`, `image`) VALUES (?,?,?,?,?,?)";
+    const sql = "INSERT INTO profile ( `name`, `contact`, `address`, `bio`, `image`,`user_id`) VALUES (?,?,?,?,?,?)";
     const {name, contact, address,bio} = req.body;
     const userId = req.user.id;
     const image = req.file ? `/${req.file.filename}` : null;
 
-    db.query(sql, [name, contact, address, bio, userId, image], (err, result)=>{
+    db.query(sql, [name, contact, address, bio, image, userId], (err, result)=>{
         if(err) return res.status(500).send(err);
         return res.status(200).send({message: "profile created", result})
     });
 };
 
-exports.getProfile = (req,res) =>{
+export const getProfile = (req,res) =>{
     const userId = req.user.id;
     const sql = "Select * from profile where user_id = ?";
 
@@ -22,7 +22,7 @@ exports.getProfile = (req,res) =>{
     });
 };
 
-exports.deleteProfile = (req, res) =>{
+export const deleteProfile = (req, res) =>{
     const { id } = req.params;
     const userId = req.user.id;
 
@@ -34,11 +34,11 @@ exports.deleteProfile = (req, res) =>{
             return res.status(404).send({message: "Profile not found or user not authorized"});
 
         }
-        return res.status(200).send({message: "Profile Created"})
+        return res.status(200).send({message: "Profile Deleted"})
     });
 };
 
-exports.updateProfile = (req, res)=>{
+export const updateProfile = (req, res)=>{
     const sql = "UPDATE profile set name = ?, contact = ?, address =?, bio = ?, image = ? AND user_id = ?";
     const { name, contact, address, bio, id } = req.body;
     const userId = req.user.id;

@@ -5,6 +5,7 @@ import db from './db.js';
 import authRoutes from './routes/authRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 import cookieParser from 'cookie-parser';
+import profileRoutes from './routes/profileRoutes.js';
 
 
 dotenv.config()
@@ -23,6 +24,7 @@ app.use(cors({
 
 app.use('/', authRoutes)
 app.use('/', blogRoutes)
+app.use('/', profileRoutes)
 
 const PORT = process.env.PORT
 
