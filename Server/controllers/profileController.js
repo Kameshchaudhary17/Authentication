@@ -38,17 +38,22 @@ export const deleteProfile = (req, res) =>{
     });
 };
 
-export const updateProfile = (req, res)=>{
-    const sql = "UPDATE profile set name = ?, contact = ?, address =?, bio = ?, image = ? AND user_id = ?";
+export const updateProfile = (req, res) => {
+    const sql = "UPDATE profile SET name = ?, contact = ?, address = ?, bio = ?, image = ? WHERE id = ? AND user_id = ?";
     const { name, contact, address, bio, id } = req.body;
     const userId = req.user.id;
-    const image = req.file ? `/${req.file.filename}` : req.body.image; // Use the new image or keep the existing one
-
+    const image = req.file ? `/${req.file.filename}` : req.body.image;
+  
     db.query(sql, [name, contact, address, bio, image, id, userId], (err, result) => {
-        if (err) return res.status(500).send(err);
-        if (result.affectedRows === 0) {
-            return res.status(404).send({ message: "Blog post not found or user not authorized" });
-        }
-        return res.status(200).send({ message: "Blog post updated successfully", result });
+      if (err) {
+        console.error('Error updating profile:', err);
+        return res.status(500).send({ message: 'Error updating profile', error: err.message });
+      }
+  
+      if (result.affectedRows === 0) {
+        return res.status(404).send({ message: 'Profile not found or user not authorized' });
+      }
+  
+      return res.status(200).send({ message: 'Profile updated successfully', result });
     });
-}
+  };
